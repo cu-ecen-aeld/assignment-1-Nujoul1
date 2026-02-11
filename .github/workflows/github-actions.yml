@@ -1,31 +1,39 @@
 name: assignment-test
+
 on:
-    push:
-        tags-ignore:
-            - '*'
-        branches:
-            - '*'
+  push:
+    tags-ignore:
+      - '*'
+    branches:
+      - '*'
+
 jobs:
-    unit-test:
-        container: cuaesd/aesd-autotest:24-unit-test
-          image: cuaesd/aesd-autotest:24-unit-test
-          options: --platform=linux/amd64
-        runs-on: self-hosted
-        steps:
-          - uses: actions/checkout@v4
-            with:
-                submodules: recursive
-          - name: Run unit test
-            run: ./unit-test.sh
-    full-test:
-        container: cuaesd/aesd-autotest:24-assignment1
-          image: cuaesd/aesd-autotest:24-assignment1
-          options: --platform=linux/amd64
-        runs-on: self-hosted
-        steps:
-          - uses: actions/checkout@v4
-          - name: Checkout submodules
-            with:
-                submodules: recursive
-          - name: Run full test
-            run: ./full-test.sh
+  unit-test:
+    runs-on: [self-hosted, Linux, ARM64]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Run unit test in amd64 container
+        run: |
+          set -e
+          UID=1000
+          GID=1000
+          docker pull cuaesd/aesd-autotest:24-unit-test
+          docker run --rm --platform linux/amd64             --user "1000:"             -v ":/work" -w /work             cuaesd/aesd-autotest:24-unit-test             bash -lc "./unit-test.sh"
+
+  full-test:
+    runs-on: [self-hosted, Linux, ARM64]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Run full test in amd64 container
+        run: |
+          set -e
+          UID=1000
+          GID=1000
+          docker pull cuaesd/aesd-autotest:24-assignment1
+          docker run --rm --platform linux/amd64             --user "1000:"             -v ":/work" -w /work             cuaesd/aesd-autotest:24-assignment1             bash -lc "./full-test.sh"
